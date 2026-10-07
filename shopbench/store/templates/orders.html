@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Your orders - ShopBench Market{% endblock %}
+{% block content %}
+<h1>Your orders</h1>
+{% for o in orders %}
+<h2 style="font-size:16px">{{ o.order_id }} · ${{ '%.2f' % o.total }}</h2>
+<ul>{% for l in o.lines %}<li>{{ l.qty }} × {{ l.title }} (${{ '%.2f' % l.unit_price }})</li>{% endfor %}</ul>
+{% else %}
+<p>You have no orders yet.</p>
+{% endfor %}
+{% endblock %}

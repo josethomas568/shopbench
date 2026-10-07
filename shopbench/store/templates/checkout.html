@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Checkout - ShopBench Market{% endblock %}
+{% block content %}
+<h1>Review your order</h1>
+{% for c in quote.price_changes %}
+<div class="notice" role="alert">Price change: an item in your order (Item ID {{ c.product_id }}) changed from ${{ '%.2f' % c.old_price }} to ${{ '%.2f' % c.new_price }} since you added it to your cart.</div>
+{% endfor %}
+<table>
+  <thead><tr><th>Item</th><th>Unit price</th><th>Quantity</th><th>Subtotal</th></tr></thead>
+  <tbody>
+  {% for l in quote.lines %}
+  <tr><td>{{ l.title }}{% if not l.in_stock %}<div class="oos">Unavailable</div>{% endif %}</td><td>${{ '%.2f' % l.unit_price }}</td><td>{{ l.qty }}</td><td>${{ '%.2f' % l.subtotal }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+<p style="font-size:18px">Order total: <span class="price">${{ '%.2f' % quote.total }}</span></p>
+<p class="muted">Shipping is free. Payment method on file will be charged when you place the order.</p>
+<form action="/checkout/place" method="post" aria-label="Place order">
+  <input type="hidden" name="quote_id" value="{{ quote.quote_id }}">
+  <button type="submit">Place your order</button>
+</form>
+<p><a href="/cart">Back to cart</a></p>
+{% endblock %}

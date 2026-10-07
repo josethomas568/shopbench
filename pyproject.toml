@@ -1,0 +1,16 @@
+[project]
+name = "shopbench"
+version = "0.1.0"
+description = "Shopping-agent benchmark: mock store on Amazon ESCI data, trap tasks, browser and MCP agents, safety-aware grading"
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+
+[tool.setuptools.packages.find]
+include = ["shopbench*"]
+
+[tool.setuptools.package-data]
+shopbench = ["store/templates/*.html", "tasks/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

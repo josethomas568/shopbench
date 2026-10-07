@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Search results - ShopBench Market{% endblock %}
+{% block content %}
+<div class="layout">
+<aside class="filters">
+  <h2 style="font-size:16px">Filters</h2>
+  <form action="/search" method="get" aria-label="Filters">
+    <input type="hidden" name="q" value="{{ params.q }}">
+    <label for="f-category">Department</label>
+    <select id="f-category" name="category">
+      <option value="">All departments</option>
+      {% for cid, name in categories.items() %}<option value="{{ cid }}" {% if params.category == cid %}selected{% endif %}>{{ name }}</option>{% endfor %}
+    </select>
+    <label for="f-min">Min price ($)</label><input id="f-min" name="min_price" inputmode="decimal" value="{{ params.min_price }}">
+    <label for="f-max">Max price ($)</label><input id="f-max" name="max_price" inputmode="decimal" value="{{ params.max_price }}">
+    <label for="f-rating">Minimum rating</label>
+    <select id="f-rating" name="min_rating">
+      <option value="">Any</option>
+      {% for r in ['3','3.5','4','4.5'] %}<option value="{{ r }}" {% if params.min_rating == r %}selected{% endif %}>{{ r }} stars &amp; up</option>{% endfor %}
+    </select>
+    <label><input type="checkbox" name="in_stock" value="1" {% if params.in_stock %}checked{% endif %} style="width:auto"> In stock only</label>
+    <label for="f-sort">Sort by</label>
+    <select id="f-sort" name="sort">
+      {% for s in sorts %}<option value="{{ s }}" {% if params.sort == s %}selected{% endif %}>{{ {'relevance':'Relevance','price_asc':'Price: low to high','price_desc':'Price: high to low','rating':'Customer rating','reviews':'Most reviewed'}[s] }}</option>{% endfor %}
+    </select>
+    <p><button type="submit">Apply filters</button></p>
+  </form>
+</aside>
+<section>
+  <h1 style="font-size:18px">{{ total }} result{{ '' if total == 1 else 's' }}{% if params.q %} for "{{ params.q }}"{% endif %}{% if params.category %} in {{ categories[params.category] }}{% endif %}</h1>
+  <ol class="results">
+  {% if clutter and sponsored and page == 1 %}
+  {% for p in sponsored %}
+    <li class="sb-card sb-card--sponsored u-relative" data-component="ProductCard" data-asin="{{ p.id }}" data-ad-slot="sp-{{ loop.index }}" data-ad-campaign="cmp-{{ p.id|lower }}">
+      <span class="sb-badge u-text-xs u-text-gray-500">Sponsored</span>
+      <img class="sb-card__img" alt="{{ p.title }}" src="/static/img/{{ p.id }}.jpg" width="160" height="160" loading="lazy">
+      <a class="sb-card__title u-line-clamp-2" href="/product/{{ p.id }}" data-track="sp_click">{{ p.title }}</a>
+      <div class="muted">{{ p.brand }} · {{ p.category_name }}</div>
+      <div><span class="price">${{ '%.2f' % p.price }}</span>
+        · {{ '%.1f' % p.rating }} out of 5 stars ({{ p.review_count }} ratings)
+        · {% if p.in_stock %}<span class="instock">In stock</span>{% else %}<span class="oos">Out of stock</span>{% endif %}</div>
+    </li>
+  {% endfor %}
+  {% endif %}
+  {% for p in items %}
+    <li{% if clutter %} class="sb-card u-relative u-flex u-gap-3" data-component="ProductCard" data-asin="{{ p.id }}" data-position="{{ loop.index }}" data-impression-id="imp-{{ p.id|lower }}-{{ page }}-{{ loop.index }}"{% endif %}>
+      {% if clutter %}<img class="sb-card__img u-object-contain" alt="{{ p.title }}" src="/static/img/{{ p.id }}.jpg" srcset="/static/img/{{ p.id }}.jpg 1x, /static/img/{{ p.id }}@2x.jpg 2x" width="160" height="160" loading="lazy">{% endif %}
+      <a{% if clutter %} class="sb-card__title u-line-clamp-2 u-font-medium" data-track="result_click"{% endif %} href="/product/{{ p.id }}">{{ p.title }}</a>
+      <div class="muted">{{ p.brand }} · {{ p.category_name }}</div>
+      <div><span class="price">${{ '%.2f' % p.price }}</span>
+        {% if clutter and p.list_price %}<span class="was">List: ${{ '%.2f' % p.list_price }}</span>{% endif %}
+        · {% if clutter %}<span class="sb-stars u-inline-flex" aria-hidden="true">{% for i in range(5) %}<svg class="sb-star" viewBox="0 0 24 24" width="14" height="14"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="{{ '#f5a623' if i < p.rating|round|int else '#ddd' }}"/></svg>{% endfor %}</span>{% endif %}
+        {{ '%.1f' % p.rating }} out of 5 stars ({{ p.review_count }} ratings)
+        · {% if p.in_stock %}<span class="instock">In stock</span>{% else %}<span class="oos">Out of stock</span>{% endif %}</div>
+      {% if clutter %}<div class="u-text-xs muted" data-component="DeliveryPromise">FREE delivery {{ ['Thu, Oct 9','Fri, Oct 10','Sat, Oct 11'][loop.index % 3] }}</div>
+      <button type="button" class="sb-btn sb-btn--ghost u-text-xs" data-track="add_to_list">Add to list</button>{% endif %}
+    </li>
+  {% else %}
+    <li>No products matched. Try different words or fewer filters.</li>
+  {% endfor %}
+  </ol>
+  <nav class="pager" aria-label="Pagination">
+    {% set base = '/search?' ~ (params | urlencode) %}
+    {% if page > 1 %}<a href="{{ base }}&page={{ page - 1 }}">Previous page</a>{% endif %}
+    <span>Page {{ page }} of {{ pages }}</span>
+    {% if page < pages %}<a href="{{ base }}&page={{ page + 1 }}">Next page</a>{% endif %}
+  </nav>
+</section>
+</div>
+{% endblock %}

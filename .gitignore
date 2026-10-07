@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+runs/
+checkpoints/
+data/sft_*.jsonl
+.pytest_cache/

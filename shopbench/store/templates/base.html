@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}ShopBench Market{% endblock %}</title>
+<style>
+  :root { --ink:#1d2433; --muted:#5b6475; --line:#e3e6ec; --accent:#0b6e4f; --warn:#a4400d; --bg:#fafbfc; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.45 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color:var(--ink); background:var(--bg); }
+  header { background:#fff; border-bottom:1px solid var(--line); padding:10px 20px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+  header .logo { font-weight:700; color:var(--accent); text-decoration:none; font-size:18px; }
+  header form { flex:1; display:flex; gap:6px; min-width:240px; }
+  header input[type=search] { flex:1; padding:7px 10px; border:1px solid var(--line); border-radius:6px; }
+  main { max-width:1100px; margin:0 auto; padding:20px; }
+  button, .btn { background:var(--accent); color:#fff; border:0; border-radius:6px; padding:7px 14px; cursor:pointer; font:inherit; text-decoration:none; display:inline-block; }
+  button.secondary { background:#fff; color:var(--ink); border:1px solid var(--line); }
+  .price { font-weight:700; }
+  .was { color:var(--muted); text-decoration:line-through; font-size:13px; margin-left:4px; }
+  .muted { color:var(--muted); font-size:13px; }
+  .oos { color:var(--warn); font-weight:600; }
+  .instock { color:var(--accent); }
+  .notice { border:1px solid var(--warn); background:#fff4ec; color:var(--warn); padding:10px 14px; border-radius:6px; margin:12px 0; }
+  .ok { border:1px solid var(--accent); background:#eefaf4; color:var(--accent); padding:10px 14px; border-radius:6px; margin:12px 0; }
+  table { border-collapse:collapse; width:100%; background:#fff; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  .layout { display:grid; grid-template-columns:220px 1fr; gap:24px; }
+  .filters label { display:block; margin:8px 0 2px; font-size:13px; color:var(--muted); }
+  .filters input, .filters select { width:100%; padding:5px; }
+  ol.results { list-style:none; padding:0; margin:0; }
+  ol.results li { background:#fff; border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin-bottom:10px; }
+  ol.results a { color:var(--ink); font-weight:600; }
+  nav.pager { margin:14px 0; display:flex; gap:10px; align-items:center; }
+  @media (max-width: 760px) { .layout { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+{% if clutter %}
+<div class="sb-promo-bar u-flex u-justify-center u-py-1 u-text-sm" data-component="PromoBar" data-track-id="promo-top-001">
+  <span class="u-font-medium">Free shipping on every order.</span> <a href="/" class="u-underline" data-track="promo_link">Shop today's deals</a>
+</div>
+<div class="sb-cookie-banner u-fixed-bottom u-shadow-lg" data-component="CookieConsent" data-consent-version="3.2.1">
+  <p class="u-text-sm">We use cookies and similar technologies to improve your shopping experience, personalize content and ads, and analyze traffic. By continuing to browse you agree to our use of cookies.</p>
+  <button type="button" class="sb-btn sb-btn--secondary" data-track="cookie_accept">Accept all cookies</button>
+  <button type="button" class="sb-btn sb-btn--ghost" data-track="cookie_manage">Manage preferences</button>
+</div>
+{% endif %}
+<header>
+  <a class="logo" href="/">ShopBench Market</a>
+  <form action="/search" method="get" role="search">
+    <label for="q" class="muted" style="position:absolute;left:-9999px">Search products</label>
+    <input id="q" type="search" name="q" placeholder="Search products" value="{{ params.q if params is defined else '' }}">
+    <button type="submit">Search</button>
+  </form>
+  <a href="/orders">Orders</a>
+  <a href="/cart">Cart ({{ cart_count or 0 }})</a>
+</header>
+{% if clutter %}
+<nav aria-label="All departments" class="sb-megamenu u-flex u-flex-wrap u-gap-4 u-px-5 u-py-2 u-bg-white u-border-b" data-component="MegaMenu" data-menu-version="2026.10">
+  {% for cid, name in categories.items() %}
+  <div class="sb-megamenu__column u-min-w-40" data-dept="{{ cid }}">
+    <a class="sb-megamenu__dept u-font-semibold" href="/search?category={{ cid }}" data-track="nav_dept_{{ cid }}">{{ name }}</a>
+    <ul class="sb-megamenu__list u-list-none u-p-0 u-text-sm">
+      <li><a href="/search?category={{ cid }}&sort=reviews" data-track="nav_best_{{ cid }}">Best sellers in {{ name }}</a></li>
+      <li><a href="/search?category={{ cid }}&sort=rating" data-track="nav_top_{{ cid }}">Top rated {{ name }}</a></li>
+      <li><a href="/search?category={{ cid }}&sort=price_asc" data-track="nav_deal_{{ cid }}">{{ name }} deals</a></li>
+      <li><a href="/search?category={{ cid }}&min_rating=4.5" data-track="nav_premium_{{ cid }}">Highly rated {{ name }}</a></li>
+    </ul>
+  </div>
+  {% endfor %}
+</nav>
+{% endif %}
+<main>
+{% block content %}{% endblock %}
+</main>
+{% if clutter %}
+<footer class="sb-footer u-bg-gray-900 u-text-gray-100 u-px-5 u-py-8" data-component="Footer">
+  {% for col, links in [('Get to know us', ['Careers','Blog','About ShopBench','Investor relations','Devices','Science','Sustainability','Accessibility']),
+                         ('Make money with us', ['Sell products','Sell on ShopBench Business','Sell apps','Become an affiliate','Advertise your products','Self-publish','Host a pickup point','See more']),
+                         ('Payment products', ['ShopBench card','Shop with points','Reload your balance','Currency converter','Gift cards','Business card','Credit card marketplace','Payment help']),
+                         ('Let us help you', ['Your account','Your orders','Shipping rates & policies','Returns & replacements','Manage your content','Recalls and product safety alerts','Registry & gift list','Help']),
+                         ('Our sites', ['ShopBench Fresh','ShopBench Music','ShopBench Video','ShopBench Photos','ShopBench Home Services','ShopBench Outlet','ShopBench Warehouse','ShopBench Second Chance'])] %}
+  <div class="sb-footer__col u-inline-block u-align-top u-w-1/5" data-footer-col="{{ loop.index }}">
+    <h3 class="u-text-sm u-font-bold">{{ col }}</h3>
+    <ul class="u-list-none u-p-0">{% for l in links %}<li class="u-py-1"><a class="u-text-xs u-text-gray-300" href="/" data-track="footer_{{ loop.index }}">{{ l }}</a></li>{% endfor %}</ul>
+  </div>
+  {% endfor %}
+  <p class="u-text-xs u-text-gray-400 u-mt-6">Conditions of Use · Privacy Notice · Consumer Health Data Privacy Disclosure · Your Ads Privacy Choices · © 2026 ShopBench Market, a fictional store for agent benchmarking.</p>
+</footer>
+{% endif %}
+</body>
+</html>

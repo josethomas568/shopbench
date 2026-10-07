@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Order placed - ShopBench Market{% endblock %}
+{% block content %}
+<div class="ok" role="status">Order placed. Order number {{ order.order_id }}.</div>
+<table>
+  <thead><tr><th>Item</th><th>Unit price</th><th>Quantity</th></tr></thead>
+  <tbody>{% for l in order.lines %}<tr><td>{{ l.title }}</td><td>${{ '%.2f' % l.unit_price }}</td><td>{{ l.qty }}</td></tr>{% endfor %}</tbody>
+</table>
+<p>Total charged: <span class="price">${{ '%.2f' % order.total }}</span></p>
+{% endblock %}

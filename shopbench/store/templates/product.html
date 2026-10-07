@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ p.title[:60] }} - ShopBench Market{% endblock %}
+{% block content %}
+<p class="muted"><a href="/search?category={{ p.category }}">{{ p.category_name }}</a></p>
+<h1 style="font-size:22px">{{ p.title }}</h1>
+<p class="muted">Brand: {{ p.brand or 'Unbranded' }}{% if p.color %} · Color: {{ p.color }}{% endif %} · Item ID: {{ p.id }}</p>
+<p><span class="price" style="font-size:22px">${{ '%.2f' % p.price }}</span>{% if p.list_price %}<span class="was">List price ${{ '%.2f' % p.list_price }}</span>{% endif %}</p>
+<p>{{ '%.1f' % p.rating }} out of 5 stars · {{ p.review_count }} ratings</p>
+{% if p.in_stock %}
+<p class="instock">In stock</p>
+<form action="/cart/add" method="post" aria-label="Add to cart">
+  <input type="hidden" name="product_id" value="{{ p.id }}">
+  <label for="qty">Quantity</label>
+  <select id="qty" name="qty">{% for n in range(1, 11) %}<option value="{{ n }}">{{ n }}</option>{% endfor %}</select>
+  <button type="submit">Add to cart</button>
+</form>
+{% else %}
+<p class="oos">Currently unavailable. We don't know when or if this item will be back in stock.</p>
+{% endif %}
+{% if p.bullets %}<h2 style="font-size:16px">About this item</h2><p>{{ p.bullets }}</p>{% endif %}
+{% if p.description %}<h2 style="font-size:16px">Product description</h2><p>{{ p.description }}</p>{% endif %}
+{% if clutter and also_viewed %}
+<section aria-label="Customers who viewed this item also viewed" class="sb-carousel u-mt-8" data-component="Carousel" data-carousel-id="also-viewed">
+  <h2 style="font-size:16px">Customers who viewed this item also viewed</h2>
+  <ol class="sb-carousel__track u-flex u-gap-4 u-overflow-x-auto u-list-none u-p-0">
+  {% for q in also_viewed %}
+    <li class="sb-carousel__item u-w-48" data-asin="{{ q.id }}" data-position="{{ loop.index }}">
+      <img alt="{{ q.title }}" src="/static/img/{{ q.id }}.jpg" width="120" height="120" loading="lazy">
+      <a href="/product/{{ q.id }}" class="u-text-sm u-line-clamp-3" data-track="also_viewed_click">{{ q.title }}</a>
+      <div class="u-text-xs"><span class="sb-stars" aria-hidden="true">{% for i in range(5) %}<svg viewBox="0 0 24 24" width="12" height="12"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="{{ '#f5a623' if i < q.rating|round|int else '#ddd' }}"/></svg>{% endfor %}</span> {{ '%.1f' % q.rating }} ({{ q.review_count }})</div>
+      <div class="price u-text-sm">${{ '%.2f' % q.price }}</div>
+    </li>
+  {% endfor %}
+  </ol>
+</section>
+{% endif %}
+{% endblock %}

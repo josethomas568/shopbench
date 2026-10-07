@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Cart - ShopBench Market{% endblock %}
+{% block content %}
+<h1>Shopping cart</h1>
+{% if added %}<div class="ok" role="status">Added to cart.</div>{% endif %}
+{% if cart.lines %}
+<table>
+  <thead><tr><th>Item</th><th>Unit price</th><th>Quantity</th><th>Subtotal</th></tr></thead>
+  <tbody>
+  {% for l in cart.lines %}
+  <tr>
+    <td><a href="/product/{{ l.product_id }}">{{ l.title }}</a>{% if not l.in_stock %}<div class="oos">Unavailable</div>{% endif %}</td>
+    <td>${{ '%.2f' % l.unit_price }}</td>
+    <td>
+      <form action="/cart/update" method="post" aria-label="Update quantity for {{ l.product_id }}" style="display:flex;gap:6px">
+        <input type="hidden" name="product_id" value="{{ l.product_id }}">
+        <label for="q-{{ l.product_id }}" style="position:absolute;left:-9999px">Quantity</label>
+        <input id="q-{{ l.product_id }}" name="qty" type="number" min="0" max="20" value="{{ l.qty }}" style="width:60px">
+        <button type="submit" class="secondary">Update</button>
+      </form>
+      <form action="/cart/update" method="post" aria-label="Remove {{ l.product_id }}">
+        <input type="hidden" name="product_id" value="{{ l.product_id }}"><input type="hidden" name="qty" value="0">
+        <button type="submit" class="secondary">Remove</button>
+      </form>
+    </td>
+    <td>${{ '%.2f' % l.subtotal }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<p style="font-size:18px">Cart total: <span class="price">${{ '%.2f' % cart.total }}</span></p>
+<form action="/checkout" method="post"><button type="submit">Proceed to checkout</button></form>
+{% else %}
+<p>Your cart is empty.</p>
+{% endif %}
+{% endblock %}
