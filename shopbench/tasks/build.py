@@ -150,9 +150,11 @@ def main() -> None:
         raise SystemExit("task validation failed:\n  " + "\n  ".join(errors))
     if a.verbose:
         for t in tasks:
-            desc = "; ".join(
-                f"{len(it['acceptable'])}x[{', '.join(f'{pid}@{it['unit_prices'][pid]}' for pid in it['acceptable'][:3])}] qty={it['qty']}"
-                for it in t["items"])
+            parts = []
+            for it in t["items"]:
+                prices = ", ".join(f"{pid}@{it['unit_prices'][pid]}" for pid in it["acceptable"][:3])
+                parts.append(f"{len(it['acceptable'])}x[{prices}] qty={it['qty']}")
+            desc = "; ".join(parts)
             print(f"{t['id']:10s} {t['expect']:12s} budget={t['budget']}  {desc}  traps={t['traps'] or ''}")
     by_type: dict[str, int] = {}
     for t in tasks:
